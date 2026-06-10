@@ -21,7 +21,14 @@
       display: flex; align-items: center; justify-content: center;
       font-family: 'Nunito', sans-serif;
       padding: 2rem 1rem;
+      padding-left:   max(1rem, env(safe-area-inset-left));
+      padding-right:  max(1rem, env(safe-area-inset-right));
+      padding-top:    max(2rem, env(safe-area-inset-top));
+      padding-bottom: max(2rem, env(safe-area-inset-bottom));
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
     }
+    button, .drink-chip, .house-wrap { -webkit-tap-highlight-color: transparent; }
     /* petals removed */
     .card {
       background: white; border-radius: 2.5rem; max-width: 520px; width: 100%;
@@ -170,9 +177,9 @@
     .rsvp-section { margin-top:.5rem; }
     .rsvp-label { font-size:.72rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--rose); margin-bottom:1rem; }
     .rsvp-buttons { display:flex; gap:.75rem; justify-content:center; position:relative; }
-    .btn-yes { background:linear-gradient(135deg,#F2879E,#D95C78); color:white; border:none; border-radius:999px; padding:.75rem 2rem; font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(217,92,120,.3); transition:transform .15s,box-shadow .15s; }
+    .btn-yes { background:linear-gradient(135deg,#F2879E,#D95C78); color:white; border:none; border-radius:999px; padding:.85rem 2rem; min-height:48px; font-family:'Nunito',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(217,92,120,.3); transition:transform .15s,box-shadow .15s; touch-action:manipulation; }
     .btn-yes:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(217,92,120,.4); }
-    .btn-no { background:white; color:var(--muted); border:1.5px solid var(--blush); border-radius:999px; padding:.75rem 1.5rem; font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .btn-no { background:white; color:var(--muted); border:1.5px solid var(--blush); border-radius:999px; padding:.85rem 1.5rem; min-height:48px; font-family:'Nunito',sans-serif; font-size:1rem; font-weight:600; cursor:pointer; white-space:nowrap; touch-action:manipulation; }
     .rsvp-confirmed { display:none; flex-direction:column; align-items:center; gap:.5rem; animation:popIn .4s cubic-bezier(.36,1.56,.64,1) both; }
     .rsvp-confirmed .confirmed-text { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--deep-rose); font-style:italic; }
     .rsvp-confirmed .confirmed-sub { font-size:.85rem; color:var(--muted); }
@@ -214,13 +221,14 @@
       background: var(--petal);
       border: 1.5px solid var(--blush);
       border-radius: 0.9rem;
-      padding: 0.65rem 0.9rem;
+      padding: 0.7rem 0.9rem;
       font-family: 'Nunito', sans-serif;
-      font-size: 0.92rem;
+      font-size: 16px; /* 16px+ on iOS prevents zoom-on-focus */
       color: var(--text);
       outline: none;
       transition: border-color 0.2s;
       -webkit-appearance: none;
+      appearance: none;
     }
     .field-wrap input:focus, .field-wrap textarea:focus, .field-wrap select:focus {
       border-color: var(--rose);
@@ -230,18 +238,24 @@
     .field-wrap select { cursor: pointer; }
 
     /* drink chips */
-    .drink-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .drink-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .drink-chip {
       background: white;
       border: 1.5px solid var(--blush);
       border-radius: 999px;
-      padding: 0.35rem 0.85rem;
-      font-size: 0.82rem;
+      padding: 0.55rem 1rem;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.9rem;
       color: var(--muted);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
       user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
     }
+    .drink-chip:active { transform: scale(0.96); }
     .drink-chip.active {
       background: linear-gradient(135deg, #F2879E, #D95C78);
       border-color: transparent;
@@ -254,12 +268,14 @@
       margin-top: 1rem;
       background: linear-gradient(135deg, #F2879E, #D95C78);
       color: white; border: none; border-radius: 999px;
-      padding: 0.85rem 1.5rem;
+      padding: 0.95rem 1.5rem;
+      min-height: 50px;
       font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700;
       cursor: pointer;
       box-shadow: 0 4px 14px rgba(217,92,120,.28);
       transition: transform .15s, box-shadow .15s;
       position: relative; overflow: hidden;
+      touch-action: manipulation;
     }
     .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(217,92,120,.4); }
     .btn-submit:active { transform: scale(0.98); }
@@ -292,6 +308,44 @@
       25%  { transform: scale(1.1) rotate(45deg);  opacity: 1; }
       60%  { transform: scale(0.9) rotate(90deg); opacity: 0.8; }
       100% { transform: scale(0) rotate(135deg); opacity: 0; }
+    }
+
+    /* ---- MOBILE TUNING ---- */
+    @media (max-width: 480px) {
+      body { padding: 1.2rem 0.75rem; }
+      .card {
+        padding: 2rem 1.25rem 1.6rem;
+        border-radius: 1.8rem;
+        box-shadow: 0 4px 22px rgba(217,92,120,0.12), 0 0 0 4px var(--blush), 0 0 0 8px white, 0 0 0 12px #F9C9D455;
+      }
+      .corner-svg { width: 40px; height: 40px; }
+      .info-grid { gap: 0.55rem; }
+      .info-block { padding: 0.85rem 0.5rem; }
+      .info-block .value { font-size: 1rem; }
+      .address-block { padding: 0.85rem 1rem; gap: 0.6rem; }
+      .address-block .value { font-size: 1rem; }
+      .message { font-size: 0.92rem; line-height: 1.65; margin-bottom: 1.5rem; }
+      .rsvp-buttons { flex-wrap: wrap; }
+      .cd-seg { min-width: 38px; padding: 0.25rem 0.4rem 0.2rem; }
+      .cd-num { font-size: 1.3rem; }
+      .countdown-block { padding: 0.85rem 0.9rem 0.75rem; }
+      .speech-bubble { max-width: 92%; }
+      .knock-tip { font-size: 0.68rem; }
+    }
+    @media (max-width: 360px) {
+      .card { padding: 1.6rem 1rem 1.4rem; }
+      .cd-seg { min-width: 34px; }
+      .cd-colon { font-size: 1.1rem; }
+    }
+
+    /* Respect user motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+      .sparkle { display: none !important; }
     }
   </style>
 </head>
@@ -428,7 +482,9 @@
     <div id="guestFormInner">
       <div class="field-wrap">
         <label>Твоє ім'я</label>
-        <input type="text" id="guestName" placeholder="Як тебе звати?" maxlength="60" />
+        <input type="text" id="guestName" placeholder="Як тебе звати?" maxlength="60"
+               autocomplete="name" autocapitalize="words" autocorrect="off"
+               enterkeyhint="next" inputmode="text" />
       </div>
 
       <div class="field-wrap">
@@ -448,7 +504,8 @@
 
       <div class="field-wrap">
         <label>Побажання господині</label>
-        <textarea id="guestWish" placeholder="Тут можна написати щось тепле, смішне або секретне" maxlength="300"></textarea>
+        <textarea id="guestWish" placeholder="Тут можна написати щось тепле, смішне або секретне" maxlength="300"
+                  autocapitalize="sentences" enterkeyhint="done"></textarea>
       </div>
 
       <button class="btn-submit" id="btnSubmit" onclick="submitGuest()">Надіслати побажання</button>
@@ -616,8 +673,10 @@ function confirmYes() {
 }
 
 function spawnConfetti() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const colors = ['#F2879E','#D95C78','#F9C9D4','#FFB3C6','#fff'];
-  for (let i = 0; i < 32; i++) {
+  const count = window.innerWidth < 600 ? 18 : 32;
+  for (let i = 0; i < count; i++) {
     const dot = document.createElement('div');
     const size = 5 + Math.random() * 7;
     dot.style.cssText = `position:fixed;width:${size}px;height:${size}px;border-radius:${Math.random()>.5?'50%':'3px'};background:${colors[Math.floor(Math.random()*colors.length)]};left:50vw;top:50vh;pointer-events:none;z-index:9999;transition:transform ${0.5+Math.random()*.7}s ease-out,opacity .9s ease-out;opacity:1;`;
@@ -727,14 +786,24 @@ function showSuccess(name) {
     setTimeout(() => wrap.remove(), (parseFloat(dur) + parseFloat(delay) + 0.2) * 1000);
   }
 
-  // Seed a lot upfront
-  for (let i = 0; i < 60; i++) makeSparkle(null, null);
-  // Continuous stream — fast
-  setInterval(() => { makeSparkle(null, null); makeSparkle(null, null); }, 120);
+  // Respect reduced motion — no sparkles at all
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const isMobile = window.matchMedia('(max-width: 600px)').matches;
+  const initialCount  = isMobile ? 25 : 60;
+  const streamMs      = isMobile ? 280 : 120;
+  const streamPerTick = isMobile ? 1 : 2;
+  const burstCount    = isMobile ? 5 : 10;
+
+  for (let i = 0; i < initialCount; i++) makeSparkle(null, null);
+  setInterval(() => {
+    if (document.hidden) return; // pause when tab not visible
+    for (let i = 0; i < streamPerTick; i++) makeSparkle(null, null);
+  }, streamMs);
 
   // Click burst
   document.addEventListener('click', e => {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < burstCount; i++) {
       const angle = Math.random() * Math.PI * 2;
       const dist  = 10 + Math.random() * 40;
       setTimeout(() => makeSparkle(
