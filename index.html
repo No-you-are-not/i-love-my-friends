@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Запрошення на новосілля</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blush:     #F9C9D4;
+      --rose:      #F2879E;
+      --deep-rose: #D95C78;
+      --petal:     #FDE8EE;
+      --text:      #5A2A38;
+      --muted:     #A06070;
+    }
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #FDE8EE 0%, #FFF5F8 40%, #FCE0E9 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Nunito', sans-serif;
+      padding: 2rem 1rem;
+    }
+    /* petals removed */
+    .card {
+      background: white; border-radius: 2.5rem; max-width: 520px; width: 100%;
+      padding: 3rem 2.5rem 2.5rem;
+      box-shadow: 0 4px 30px rgba(217,92,120,0.12), 0 0 0 6px var(--blush), 0 0 0 12px white, 0 0 0 18px #F9C9D455;
+      position: relative; overflow: hidden; text-align: center;
+    }
+    .card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 90% 5%, #FDE8EE 0%, transparent 20%), radial-gradient(circle at 10% 95%, #FDE8EE 0%, transparent 20%); z-index: 0;
+      pointer-events: none;
+    }
+    .card > * { position: relative; z-index: 1; }
+    .corner-svg { position: absolute; width: 52px; height: 52px; opacity: 0.45; }
+    .corner-svg.tl { top:.9rem; left:1rem; }
+    .corner-svg.tr { top:.9rem; right:1rem; transform:scaleX(-1); }
+    .corner-svg.bl { bottom:.9rem; left:1rem; transform:scaleY(-1); }
+    .corner-svg.br { bottom:.9rem; right:1rem; transform:scale(-1,-1); }
+
+    /* ---- HOUSE (clickable) ---- */
+    .house-wrap {
+      display: flex; justify-content: center; margin-bottom: 0.75rem;
+      animation: bounce 2.5s ease-in-out infinite;
+      cursor: pointer; user-select: none;
+    }
+    .house-wrap:hover { filter: drop-shadow(0 4px 12px rgba(217,92,120,0.35)); }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+    /* door open animation */
+    .house-wrap.knocked { animation: knock 0.4s ease; }
+    @keyframes knock {
+      0%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(5px)}
+      60%{transform:translateX(-4px)} 80%{transform:translateX(3px)} 100%{transform:translateX(0)}
+    }
+    #houseDoor { transform-origin: left center; transition: transform 0.5s cubic-bezier(.36,1.2,.64,1); }
+    .door-open #houseDoor { transform: perspective(60px) rotateY(-55deg); }
+
+    /* knock tooltip */
+    .knock-tip {
+      font-size: 0.72rem; color: var(--muted); margin-top: -0.3rem; margin-bottom: 0.6rem;
+      opacity: 0.6; letter-spacing: 0.05em;
+    }
+
+    /* speech bubble */
+    .speech-bubble {
+      display: none;
+      position: relative;
+      background: var(--petal);
+      border: 1.5px solid var(--blush);
+      border-radius: 1.2rem;
+      padding: 0.75rem 1rem;
+      margin: 0 auto 1.2rem;
+      max-width: 340px;
+      font-size: 0.9rem;
+      color: var(--text);
+      animation: popIn 0.35s cubic-bezier(.36,1.5,.64,1) both;
+    }
+    .speech-bubble::before {
+      content: '';
+      position: absolute;
+      top: -10px; left: 50%; transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-bottom-color: var(--blush);
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      top: -8px; left: 50%; transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-bottom-color: var(--petal);
+    }
+    @keyframes popIn { from{transform:scale(0.7);opacity:0} to{transform:scale(1);opacity:1} }
+
+    /* ---- COUNTDOWN ---- */
+    .countdown-block {
+      background: var(--petal);
+      border: 1.5px solid var(--blush);
+      border-radius: 1.25rem;
+      padding: 1rem 1.2rem 0.9rem;
+      margin-bottom: 1.5rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
+    }
+    .cd-top-label {
+      display: flex; align-items: center; gap: 0.35rem;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--rose);
+    }
+    .cd-segments {
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .cd-seg {
+      display: flex; flex-direction: column; align-items: center;
+      background: white; border-radius: 0.6rem;
+      padding: 0.3rem 0.55rem 0.2rem;
+      min-width: 44px;
+      border: 1px solid var(--blush);
+    }
+    .cd-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 600; color: var(--deep-rose);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .cd-lbl {
+      font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+      margin-top: 2px;
+    }
+    .cd-colon {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; color: var(--rose); font-weight: 600;
+      margin-bottom: 10px; line-height: 1;
+    }
+    .countdown-block.panic .cd-num {
+      color: #D95C78;
+      animation: wiggle 0.5s ease infinite;
+    }
+    .cd-msg {
+      font-size: 0.78rem; color: var(--muted); font-style: italic;
+    }
+    @keyframes wiggle {
+      0%,100%{transform:rotate(0)} 25%{transform:rotate(-4deg)} 75%{transform:rotate(4deg)}
+    }
+
+    .eyebrow { font-size:.72rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--rose); margin-bottom:.75rem; }
+    h1 { font-family:'Playfair Display',serif; font-size:clamp(2rem,6vw,2.8rem); color:var(--deep-rose); line-height:1.15; margin-bottom:.4rem; }
+    h1 em { font-style:italic; color:var(--rose); }
+    .subtitle { font-family:'Playfair Display',serif; font-style:italic; color:var(--muted); font-size:1.05rem; margin-bottom:2rem; }
+
+    .divider { display:flex; align-items:center; gap:.75rem; margin:0 auto 2rem; max-width:300px; }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:linear-gradient(to right,transparent,var(--blush),transparent); }
+
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem; }
+    .info-block { background:var(--petal); border-radius:1.25rem; padding:1rem .75rem; border:1.5px solid #F9C9D4; }
+    .info-block .label { display:flex; align-items:center; justify-content:center; gap:.35rem; font-size:.65rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--rose); margin-bottom:.35rem; }
+    .info-block .value { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--text); font-weight:600; line-height:1.3; }
+    .info-block .sub { font-size:.8rem; color:var(--muted); margin-top:.15rem; }
+
+    .address-block { background:var(--petal); border-radius:1.25rem; padding:1rem 1.25rem; border:1.5px solid #F9C9D4; margin-bottom:2rem; display:flex; align-items:center; gap:.85rem; text-align:left; }
+    .address-block .label { font-size:.65rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--rose); margin-bottom:.2rem; }
+    .address-block .value { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--text); font-weight:600; }
+
+    .message { font-size:.97rem; color:var(--muted); line-height:1.8; margin-bottom:2rem; font-style:italic; }
+
+    /* RSVP */
+    .rsvp-section { margin-top:.5rem; }
+    .rsvp-label { font-size:.72rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--rose); margin-bottom:1rem; }
+    .rsvp-buttons { display:flex; gap:.75rem; justify-content:center; position:relative; }
+    .btn-yes { background:linear-gradient(135deg,#F2879E,#D95C78); color:white; border:none; border-radius:999px; padding:.75rem 2rem; font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(217,92,120,.3); transition:transform .15s,box-shadow .15s; }
+    .btn-yes:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(217,92,120,.4); }
+    .btn-no { background:white; color:var(--muted); border:1.5px solid var(--blush); border-radius:999px; padding:.75rem 1.5rem; font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .rsvp-confirmed { display:none; flex-direction:column; align-items:center; gap:.5rem; animation:popIn .4s cubic-bezier(.36,1.56,.64,1) both; }
+    .rsvp-confirmed .confirmed-text { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--deep-rose); font-style:italic; }
+    .rsvp-confirmed .confirmed-sub { font-size:.85rem; color:var(--muted); }
+    .confetti-burst { font-size:1.8rem; animation:spin .6s ease both; }
+    @keyframes spin { from{transform:rotate(-30deg) scale(0)} to{transform:rotate(0) scale(1)} }
+
+    .hearts-row { display:flex; justify-content:center; align-items:center; gap:.6rem; margin-top:1.8rem; margin-bottom:.5rem; }
+    .hearts-row svg { animation:pulse 2s ease-in-out infinite; }
+    .hearts-row svg:nth-child(2){animation-delay:.35s} .hearts-row svg:nth-child(3){animation-delay:.7s}
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+    .footer-note { font-size:.78rem; color:#C89AAA; letter-spacing:.05em; }
+
+    /* ---- GUEST FORM ---- */
+    .guest-form-section {
+      margin-top: 2rem;
+      border-top: 1px dashed var(--blush);
+      padding-top: 1.8rem;
+    }
+    .guest-form-section .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--deep-rose);
+      margin-bottom: 0.3rem;
+    }
+    .guest-form-section .section-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 1.2rem;
+      font-style: italic;
+    }
+    .field-wrap { margin-bottom: 0.9rem; text-align: left; }
+    .field-wrap label {
+      display: block;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--rose); margin-bottom: 0.3rem;
+    }
+    .field-wrap input, .field-wrap textarea, .field-wrap select {
+      width: 100%;
+      background: var(--petal);
+      border: 1.5px solid var(--blush);
+      border-radius: 0.9rem;
+      padding: 0.65rem 0.9rem;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.92rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+    .field-wrap input:focus, .field-wrap textarea:focus, .field-wrap select:focus {
+      border-color: var(--rose);
+      background: white;
+    }
+    .field-wrap textarea { resize: none; height: 72px; line-height: 1.5; }
+    .field-wrap select { cursor: pointer; }
+
+    /* drink chips */
+    .drink-chips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+    .drink-chip {
+      background: white;
+      border: 1.5px solid var(--blush);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .drink-chip.active {
+      background: linear-gradient(135deg, #F2879E, #D95C78);
+      border-color: transparent;
+      color: white;
+      font-weight: 600;
+    }
+
+    .btn-submit {
+      width: 100%;
+      margin-top: 1rem;
+      background: linear-gradient(135deg, #F2879E, #D95C78);
+      color: white; border: none; border-radius: 999px;
+      padding: 0.85rem 1.5rem;
+      font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(217,92,120,.28);
+      transition: transform .15s, box-shadow .15s;
+      position: relative; overflow: hidden;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(217,92,120,.4); }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .form-success {
+      display: none;
+      flex-direction: column; align-items: center; gap: 0.5rem;
+      animation: popIn .4s cubic-bezier(.36,1.56,.64,1) both;
+      padding: 1rem 0 0.5rem;
+    }
+    .form-success .ok-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg,#F2879E,#D95C78);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .form-success .ok-text { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--deep-rose); font-style:italic; }
+    .form-success .ok-sub { font-size:.83rem; color:var(--muted); }
+
+    /* ---- SPARKLES ---- */
+    .sparkle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9997;
+      animation: sparkle-anim var(--dur, 2s) ease-in-out var(--delay, 0s) forwards;
+    }
+    @keyframes sparkle-anim {
+      0%   { transform: scale(0) rotate(0deg);   opacity: 0; }
+      25%  { transform: scale(1.1) rotate(45deg);  opacity: 1; }
+      60%  { transform: scale(0.9) rotate(90deg); opacity: 0.8; }
+      100% { transform: scale(0) rotate(135deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  // petals removed — sparkles only
+</script>
+
+<div class="card">
+  <svg class="corner-svg tl" viewBox="0 0 52 52" fill="none"><path d="M4 48 Q4 4 48 4" stroke="#F2879E" stroke-width="1.5" fill="none" stroke-dasharray="3 4"/><circle cx="10" cy="10" r="3" fill="#F9C9D4"/><circle cx="22" cy="6" r="2" fill="#F2879E"/><circle cx="6" cy="22" r="2" fill="#F2879E"/></svg>
+  <svg class="corner-svg tr" viewBox="0 0 52 52" fill="none"><path d="M4 48 Q4 4 48 4" stroke="#F2879E" stroke-width="1.5" fill="none" stroke-dasharray="3 4"/><circle cx="10" cy="10" r="3" fill="#F9C9D4"/><circle cx="22" cy="6" r="2" fill="#F2879E"/><circle cx="6" cy="22" r="2" fill="#F2879E"/></svg>
+  <svg class="corner-svg bl" viewBox="0 0 52 52" fill="none"><path d="M4 48 Q4 4 48 4" stroke="#F2879E" stroke-width="1.5" fill="none" stroke-dasharray="3 4"/><circle cx="10" cy="10" r="3" fill="#F9C9D4"/><circle cx="22" cy="6" r="2" fill="#F2879E"/><circle cx="6" cy="22" r="2" fill="#F2879E"/></svg>
+  <svg class="corner-svg br" viewBox="0 0 52 52" fill="none"><path d="M4 48 Q4 4 48 4" stroke="#F2879E" stroke-width="1.5" fill="none" stroke-dasharray="3 4"/><circle cx="10" cy="10" r="3" fill="#F9C9D4"/><circle cx="22" cy="6" r="2" fill="#F2879E"/><circle cx="6" cy="22" r="2" fill="#F2879E"/></svg>
+
+  <!-- CLICKABLE HOUSE -->
+  <div class="house-wrap" id="houseWrap" onclick="knockDoor()" title="Постукай!">
+    <svg id="houseSvg" width="72" height="68" viewBox="0 0 72 68" fill="none">
+      <path d="M6 34 L36 8 L66 34" stroke="#F2879E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="12" y="33" width="48" height="30" rx="3" fill="#FDE8EE" stroke="#F2879E" stroke-width="2"/>
+      <rect x="17" y="40" width="11" height="10" rx="2" fill="white" stroke="#F9C9D4" stroke-width="1.5"/>
+      <rect x="44" y="40" width="11" height="10" rx="2" fill="white" stroke="#F9C9D4" stroke-width="1.5"/>
+      <!-- door (clickable) -->
+      <rect id="houseDoor" x="28" y="44" width="16" height="19" rx="2.5" fill="white" stroke="#F9C9D4" stroke-width="1.5"/>
+      <!-- door knob -->
+      <circle cx="41" cy="54" r="1.5" fill="#F2879E"/>
+      <path d="M36 8 L36 2" stroke="#F2879E" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="36" cy="2" r="2" fill="#D95C78"/>
+    </svg>
+  </div>
+  <p class="knock-tip">← постукай у двері</p>
+
+  <!-- speech bubble from the house -->
+  <div class="speech-bubble" id="speechBubble"></div>
+
+  <p class="eyebrow">з любов'ю запрошую вас</p>
+  <h1>Нове <em>гніздечко</em></h1>
+  <p class="subtitle">відкриває свої двері</p>
+
+  <div class="divider">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3C9 3 15 6.5 15 11C15 13.8 12.3 16 9 16C5.7 16 3 13.8 3 11C3 6.5 9 3 9 3Z" fill="#F9C9D4" stroke="#F2879E" stroke-width="1"/></svg>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-block">
+      <div class="label">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="2" stroke="#F2879E" stroke-width="1.3"/><path d="M1 5.5h11" stroke="#F2879E" stroke-width="1.1"/><path d="M4 1v2M9 1v2" stroke="#F2879E" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Дата
+      </div>
+      <div class="value">13 червня</div>
+      <div class="sub">субота</div>
+    </div>
+    <div class="info-block">
+      <div class="label">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#F2879E" stroke-width="1.3"/><path d="M6.5 3.5v3.2l2 1.5" stroke="#F2879E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Час
+      </div>
+      <div class="value">17:00</div>
+      <div class="sub">чекаю на вас!</div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown-block" id="countdownBlock">
+    <div class="cd-top-label">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#F2879E" stroke-width="1.3"/><path d="M7 3.5v4l2.5 1.5" stroke="#F2879E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      До вечірки
+    </div>
+    <div class="cd-segments" id="cdSegments">
+      <div class="cd-seg"><span class="cd-num" id="cdDays">0</span><span class="cd-lbl">дн</span></div>
+      <span class="cd-colon">:</span>
+      <div class="cd-seg"><span class="cd-num" id="cdHours">00</span><span class="cd-lbl">год</span></div>
+      <span class="cd-colon">:</span>
+      <div class="cd-seg"><span class="cd-num" id="cdMins">00</span><span class="cd-lbl">хв</span></div>
+      <span class="cd-colon">:</span>
+      <div class="cd-seg"><span class="cd-num" id="cdSecs">00</span><span class="cd-lbl">с</span></div>
+    </div>
+    <div class="cd-msg" id="cdMsg"></div>
+  </div>
+
+  <div class="address-block">
+    <svg width="28" height="32" viewBox="0 0 28 32" fill="none" style="flex-shrink:0">
+      <path d="M14 1C8.48 1 4 5.48 4 11C4 18.5 14 31 14 31C14 31 24 18.5 24 11C24 5.48 19.52 1 14 1Z" fill="#FDE8EE" stroke="#F2879E" stroke-width="1.5"/>
+      <circle cx="14" cy="11" r="3.5" fill="#F2879E"/>
+    </svg>
+    <div>
+      <div class="label">Адреса</div>
+      <div class="value">вул. Івана Мазепи, 11а</div>
+    </div>
+  </div>
+
+  <p class="message">
+    Я переїхала і дуже хочу розділити цю радість з тобою!<br>
+    Приходь — пригощу, обійму і покажу кожен куточок<br>мого нового дому.
+  </p>
+
+  <!-- RSVP -->
+  <div class="rsvp-section">
+    <p class="rsvp-label">Чи прийдеш?</p>
+    <div class="rsvp-buttons" id="rsvpButtons">
+      <button class="btn-yes" id="btnYes" onclick="confirmYes()">Звісно прийду!</button>
+      <button class="btn-no" id="btnNo" onmouseenter="runAway(this)" ontouchstart="runAway(this)">Не прийду</button>
+    </div>
+    <div class="rsvp-confirmed" id="rsvpConfirmed">
+      <div class="confetti-burst">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <circle cx="18" cy="18" r="10" fill="#F9C9D4" stroke="#F2879E" stroke-width="1.5"/>
+          <path d="M18 10 L19.5 16.5 L26 18 L19.5 19.5 L18 26 L16.5 19.5 L10 18 L16.5 16.5 Z" fill="#D95C78"/>
+        </svg>
+      </div>
+      <div class="confirmed-text">Чудово, чекаю!</div>
+      <div class="confirmed-sub">Запиши в календар: субота, 13 червня о 17:00</div>
+    </div>
+  </div>
+
+  <div class="hearts-row">
+    <svg width="22" height="20" viewBox="0 0 22 20" fill="none"><path d="M11 18S2 12 2 6.5C2 3.4 4.4 1 7.5 1c1.7 0 3.2.8 3.5 2C11.3 1.8 12.8 1 14.5 1 17.6 1 20 3.4 20 6.5 20 12 11 18 11 18Z" fill="#F9C9D4" stroke="#F2879E" stroke-width="1.3"/></svg>
+    <svg width="16" height="15" viewBox="0 0 16 15" fill="none"><path d="M8 13S1 9 1 4.8C1 2.7 2.7 1 4.8 1c1.2 0 2.3.6 3.2 1.5C8.9 1.6 10 1 11.2 1 13.3 1 15 2.7 15 4.8 15 9 8 13 8 13Z" fill="#D95C78"/></svg>
+    <svg width="22" height="20" viewBox="0 0 22 20" fill="none"><path d="M11 18S2 12 2 6.5C2 3.4 4.4 1 7.5 1c1.7 0 3.2.8 3.5 2C11.3 1.8 12.8 1 14.5 1 17.6 1 20 3.4 20 6.5 20 12 11 18 11 18Z" fill="#F9C9D4" stroke="#F2879E" stroke-width="1.3"/></svg>
+  </div>
+  <p class="footer-note">чекаю з нетерпінням</p>
+
+  <!-- ---- GUEST FORM ---- -->
+  <div class="guest-form-section">
+    <p class="section-title">Залиш побажання
+        <svg width="18" height="15" viewBox="0 0 18 15" fill="none" style="vertical-align:middle;margin-left:4px">
+          <rect x="1" y="1" width="16" height="13" rx="2.5" fill="#FDE8EE" stroke="#F2879E" stroke-width="1.3"/>
+          <path d="M1 3.5 L9 9 L17 3.5" stroke="#F2879E" stroke-width="1.3" stroke-linecap="round"/>
+          <path d="M1 1.5 L9 7.5 L17 1.5" stroke="#F9C9D4" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
+        </svg>
+      </p>
+    <p class="section-sub">Що будеш пити і що хочеш побажати господині?</p>
+
+    <div id="guestFormInner">
+      <div class="field-wrap">
+        <label>Твоє ім'я</label>
+        <input type="text" id="guestName" placeholder="Як тебе звати?" maxlength="60" />
+      </div>
+
+      <div class="field-wrap">
+        <label>Що будеш пити?</label>
+        <div class="drink-chips" id="drinkChips">
+          <span class="drink-chip" onclick="toggleChip(this)">Вино</span>
+          <span class="drink-chip" onclick="toggleChip(this)">Шампанське</span>
+          <span class="drink-chip" onclick="toggleChip(this)">Пиво</span>
+          <span class="drink-chip" onclick="toggleChip(this)">Коктейль</span>
+          <span class="drink-chip" onclick="toggleChip(this)">Сік</span>
+          <span class="drink-chip" onclick="toggleChip(this)">Вода</span>
+          <span class="drink-chip" onclick="toggleChip(this)">Чай / кава</span>
+          <span class="drink-chip" onclick="toggleChip(this)">Камбуча</span>
+          <span class="drink-chip" onclick="toggleChip(this)">Не п'ю</span>
+        </div>
+      </div>
+
+      <div class="field-wrap">
+        <label>Побажання господині</label>
+        <textarea id="guestWish" placeholder="Тут можна написати щось тепле, смішне або секретне" maxlength="300"></textarea>
+      </div>
+
+      <button class="btn-submit" id="btnSubmit" onclick="submitGuest()">Надіслати побажання</button>
+    </div>
+
+    <div class="form-success" id="formSuccess">
+      <div class="ok-icon">
+        <svg width="22" height="17" viewBox="0 0 22 17" fill="none"><path d="M2 8L8.5 14.5L20 2" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="ok-text" id="successName">Дякую!</div>
+      <div class="ok-sub">Твої побажання отримані — до зустрічі 13 червня!</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- COUNTDOWN (real-time) ----
+(function() {
+  const party = new Date('2026-06-13T17:00:00');
+  const block = document.getElementById('countdownBlock');
+  const msgEl = document.getElementById('cdMsg');
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function set(id, val) { document.getElementById(id).textContent = val; }
+
+  function tick() {
+    const diff = party - new Date();
+
+    if (diff <= 0) {
+      set('cdDays',  '0'); set('cdHours', '00');
+      set('cdMins', '00'); set('cdSecs',  '00');
+      msgEl.textContent = 'Сьогодні! Летимо!';
+      block.classList.add('panic');
+      return;
+    }
+
+    const days    = Math.floor(diff / 86400000);
+    const hours   = Math.floor((diff % 86400000) / 3600000);
+    const minutes = Math.floor((diff % 3600000)  / 60000);
+    const seconds = Math.floor((diff % 60000)    / 1000);
+
+    set('cdDays',  days);
+    set('cdHours', pad(hours));
+    set('cdMins',  pad(minutes));
+    set('cdSecs',  pad(seconds));
+
+    if (days <= 1) {
+      block.classList.add('panic');
+      msgEl.textContent = days === 0 ? 'вже зовсім скоро!' : 'завтра! Готуй подарунок';
+    } else if (days <= 3) {
+      block.classList.add('panic');
+      msgEl.textContent = 'вже скоро!';
+    } else {
+      block.classList.remove('panic');
+      msgEl.textContent = '';
+    }
+  }
+
+  tick();
+  setInterval(tick, 1000);
+})();
+
+// ---- KNOCK THE DOOR ----
+const phrases = [
+  'Хто там? …О, це ти! Заходь 13-го!',
+  'Ще раз стукати? Я вже чую!',
+  'Тук-тук! Двері відчинять 13 червня о 17:00!',
+  'Господиня вдома, але зайнята прибиранням...',
+  'Окей, окей, я зрозуміла — ти точно прийдеш!',
+  'Стукати більше не треба, просто приходь!',
+];
+let knockCount = 0;
+let doorOpen = false;
+
+function knockDoor() {
+  const wrap = document.getElementById('houseWrap');
+  const bubble = document.getElementById('speechBubble');
+
+  // shake animation
+  wrap.classList.remove('knocked');
+  void wrap.offsetWidth; // reflow
+  wrap.classList.add('knocked');
+
+  // toggle door
+  doorOpen = !doorOpen;
+  const svg = document.getElementById('houseSvg');
+  if (doorOpen) svg.classList.add('door-open');
+  else svg.classList.remove('door-open');
+
+  // show bubble
+  bubble.textContent = phrases[knockCount % phrases.length];
+  bubble.style.display = 'block';
+  bubble.style.animation = 'none';
+  void bubble.offsetWidth;
+  bubble.style.animation = 'popIn 0.35s cubic-bezier(.36,1.5,.64,1) both';
+  knockCount++;
+
+  // auto-hide after 3s
+  clearTimeout(bubble._timer);
+  bubble._timer = setTimeout(() => {
+    bubble.style.display = 'none';
+    doorOpen = false;
+    document.getElementById('houseSvg').classList.remove('door-open');
+  }, 3000);
+}
+
+// ---- RSVP: fleeing button ----
+let escapeCount = 0;
+// Move btn outside card to allow viewport-wide fleeing, then snap back
+function runAway(btn) {
+  escapeCount++;
+
+  // First time: move button to body so card's overflow:hidden doesn't clip it
+  if (escapeCount === 1) {
+    const r = btn.getBoundingClientRect();
+    btn.style.width  = r.width  + 'px';
+    btn.style.height = r.height + 'px';
+    btn.style.margin = '0';
+    // placeholder so layout doesn't collapse
+    const ph = document.createElement('div');
+    ph.id = 'btnNoPlaceholder';
+    ph.style.cssText = `display:inline-block;width:${r.width}px;height:${r.height}px;flex-shrink:0;`;
+    btn.parentNode.insertBefore(ph, btn.nextSibling);
+    // move to body to escape overflow:hidden and stacking context
+    document.body.appendChild(btn);
+    btn.style.position = 'fixed';
+    btn.style.left = r.left + 'px';
+    btn.style.top  = r.top  + 'px';
+    btn.style.zIndex = '99999';
+  }
+
+  const margin = 60;
+  const x = margin + Math.random() * (window.innerWidth  - margin * 2 - btn.offsetWidth);
+  const y = margin + Math.random() * (window.innerHeight - margin * 2 - btn.offsetHeight);
+  btn.style.transition = 'left 0.22s cubic-bezier(.36,1.2,.64,1), top 0.22s cubic-bezier(.36,1.2,.64,1)';
+  btn.style.left = x + 'px';
+  btn.style.top  = y + 'px';
+
+  if (escapeCount === 3)  btn.textContent = 'Ні-ні-ні!';
+  if (escapeCount === 6)  btn.textContent = 'Та відстань!';
+  if (escapeCount === 9)  btn.textContent = 'Ну серйозно??';
+  if (escapeCount >= 12) {
+    // surrender — put back in flow
+    const ph = document.getElementById('btnNoPlaceholder');
+    if (ph) {
+      ph.parentNode.insertBefore(btn, ph);
+      ph.remove();
+    }
+    btn.style.cssText = '';
+    btn.className = 'btn-no';
+    btn.textContent = '…добре, прийду';
+    btn.style.borderColor = '#F2879E';
+    btn.style.color = '#D95C78';
+    btn.onmouseenter = null; btn.ontouchstart = null;
+    btn.onclick = confirmYes;
+  }
+}
+
+function confirmYes() {
+  document.getElementById('rsvpButtons').style.display = 'none';
+  document.getElementById('btnNo').style.display = 'none';
+  const confirmed = document.getElementById('rsvpConfirmed');
+  confirmed.style.display = 'flex';
+  spawnConfetti();
+}
+
+function spawnConfetti() {
+  const colors = ['#F2879E','#D95C78','#F9C9D4','#FFB3C6','#fff'];
+  for (let i = 0; i < 32; i++) {
+    const dot = document.createElement('div');
+    const size = 5 + Math.random() * 7;
+    dot.style.cssText = `position:fixed;width:${size}px;height:${size}px;border-radius:${Math.random()>.5?'50%':'3px'};background:${colors[Math.floor(Math.random()*colors.length)]};left:50vw;top:50vh;pointer-events:none;z-index:9999;transition:transform ${0.5+Math.random()*.7}s ease-out,opacity .9s ease-out;opacity:1;`;
+    document.body.appendChild(dot);
+    requestAnimationFrame(() => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist  = 80 + Math.random() * 160;
+      dot.style.transform = `translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px) rotate(${Math.random()*360}deg)`;
+      dot.style.opacity = '0';
+    });
+    setTimeout(() => dot.remove(), 1600);
+  }
+}
+
+// ---- GUEST FORM ----
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbyxb0WkAqyKyth4sidIrvB9DD_-VNuES9A_yqvteGK6-uWWxFElmIdAaR8ILtEJjhxT/exec';
+
+function toggleChip(el) {
+  el.classList.toggle('active');
+}
+
+function getSelectedDrinks() {
+  return [...document.querySelectorAll('.drink-chip.active')]
+    .map(c => c.textContent).join(', ');
+}
+
+async function submitGuest() {
+  const name  = document.getElementById('guestName').value.trim();
+  const drinks = getSelectedDrinks();
+  const wish  = document.getElementById('guestWish').value.trim();
+
+  if (!name) {
+    document.getElementById('guestName').focus();
+    document.getElementById('guestName').style.borderColor = '#D95C78';
+    setTimeout(() => document.getElementById('guestName').style.borderColor = '', 1500);
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Надсилаю…';
+
+  const payload = { name, drinks: drinks || 'не вказано', wish: wish || '—', time: new Date().toLocaleString('uk-UA') };
+
+  if (SHEET_URL === 'YOUR_SCRIPT_URL') {
+    // Demo mode — just show success without real request
+    await new Promise(r => setTimeout(r, 700));
+    showSuccess(name);
+    return;
+  }
+
+  try {
+    await fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    showSuccess(name);
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Спробуй ще раз';
+  }
+}
+
+function showSuccess(name) {
+  document.getElementById('guestFormInner').style.display = 'none';
+  const s = document.getElementById('formSuccess');
+  s.style.display = 'flex';
+  document.getElementById('successName').textContent = `Дякую, ${name}!`;
+  spawnConfetti();
+}
+
+// ---- SPARKLES ----
+(function() {
+  // Two types: white glints (cross shape) and rose 4-point stars
+  function glintSVG(size, color, opacity) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 0 L11.2 8.8 L20 10 L11.2 11.2 L10 20 L8.8 11.2 L0 10 L8.8 8.8 Z" fill="${color}" opacity="${opacity}"/>
+      <line x1="10" y1="1" x2="10" y2="19" stroke="${color}" stroke-width="1" opacity="${opacity * 0.5}"/>
+      <line x1="1" y1="10" x2="19" y2="10" stroke="${color}" stroke-width="1" opacity="${opacity * 0.5}"/>
+    </svg>`;
+  }
+  function dotSVG(size, color, opacity) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="${color}" opacity="${opacity}"/></svg>`;
+  }
+
+  // Mix: 60% white glints, 40% rose soft dots
+  function makeSparkle(x, y) {
+    const isGlint = Math.random() > 0.4;
+    const size    = isGlint ? (10 + Math.random() * 18) : (6 + Math.random() * 10);
+    const color   = isGlint
+      ? (Math.random() > 0.3 ? '#ffffff' : '#FFE0EC')
+      : ['#F2879E','#F9C9D4','#FFB3C6','#D95C78'][Math.floor(Math.random()*4)];
+    const opacity = isGlint ? (0.75 + Math.random() * 0.25) : (0.55 + Math.random() * 0.35);
+    const dur     = (0.8 + Math.random() * 1.8).toFixed(2);
+    const delay   = (Math.random() * 0.5).toFixed(2);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'sparkle';
+    wrap.style.setProperty('--dur',   dur + 's');
+    wrap.style.setProperty('--delay', delay + 's');
+    wrap.innerHTML = isGlint ? glintSVG(size, color, opacity) : dotSVG(size, color, opacity);
+    wrap.style.left = (x !== null ? x + 'px' : Math.random() * 100 + 'vw');
+    wrap.style.top  = (y !== null ? y + 'px' : Math.random() * 100 + 'vh');
+    document.body.appendChild(wrap);
+    setTimeout(() => wrap.remove(), (parseFloat(dur) + parseFloat(delay) + 0.2) * 1000);
+  }
+
+  // Seed a lot upfront
+  for (let i = 0; i < 60; i++) makeSparkle(null, null);
+  // Continuous stream — fast
+  setInterval(() => { makeSparkle(null, null); makeSparkle(null, null); }, 120);
+
+  // Click burst
+  document.addEventListener('click', e => {
+    for (let i = 0; i < 10; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist  = 10 + Math.random() * 40;
+      setTimeout(() => makeSparkle(
+        e.clientX + Math.cos(angle) * dist,
+        e.clientY + Math.sin(angle) * dist
+      ), Math.random() * 150);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
