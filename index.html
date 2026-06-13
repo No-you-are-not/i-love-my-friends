@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Запрошення на новосілля</title>
+  <title>Запрошення в гості</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,7 +28,7 @@
       -webkit-tap-highlight-color: transparent;
       -webkit-text-size-adjust: 100%;
     }
-    button, .drink-chip, .house-wrap { -webkit-tap-highlight-color: transparent; }
+    button, .house-wrap { -webkit-tap-highlight-color: transparent; }
     /* petals removed */
     .card {
       background: white; border-radius: 2.5rem; max-width: 520px; width: 100%;
@@ -247,32 +247,6 @@
     .field-wrap textarea { resize: none; height: 72px; line-height: 1.5; }
     .field-wrap select { cursor: pointer; }
 
-    /* drink chips */
-    .drink-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .drink-chip {
-      background: white;
-      border: 1.5px solid var(--blush);
-      border-radius: 999px;
-      padding: 0.55rem 1rem;
-      min-height: 40px;
-      display: inline-flex;
-      align-items: center;
-      font-size: 0.9rem;
-      color: var(--muted);
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s, border-color 0.15s;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-    }
-    .drink-chip:active { transform: scale(0.96); }
-    .drink-chip.active {
-      background: linear-gradient(135deg, #F2879E, #D95C78);
-      border-color: transparent;
-      color: white;
-      font-weight: 600;
-    }
-
     .btn-submit {
       width: 100%;
       margin-top: 1rem;
@@ -348,6 +322,52 @@
       .cd-colon { font-size: 1.1rem; }
     }
 
+    /* ---- DATE/TIME PICKERS (primary action) ---- */
+    .picker-hint {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--deep-rose);
+      margin-bottom: 0.7rem;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    }
+    .picker-hint::before, .picker-hint::after {
+      content: ''; flex: 0 0 24px; height: 1px;
+      background: linear-gradient(to right, transparent, var(--blush), transparent);
+    }
+    .info-input {
+      width: 100%;
+      background: white;
+      border: 1.5px solid var(--blush);
+      border-radius: 0.75rem;
+      padding: 0.45rem 0.5rem;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      -webkit-appearance: none;
+      appearance: none;
+      font-variant-numeric: tabular-nums;
+      min-height: 38px;
+    }
+    .info-input:hover { border-color: var(--rose); }
+    .info-input:focus {
+      border-color: var(--deep-rose);
+      box-shadow: 0 0 0 3px rgba(217,92,120,0.18);
+    }
+    .info-input::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      opacity: 0.7;
+      filter: invert(50%) sepia(35%) saturate(900%) hue-rotate(305deg) brightness(0.95);
+    }
+    .info-input::-webkit-date-and-time-value { text-align: center; }
+    .info-block.info-pickable { padding: 0.85rem 0.65rem; }
+    .info-block.info-pickable .label { margin-bottom: 0.45rem; }
+
     /* Respect user motion preference */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -391,30 +411,31 @@
   <!-- speech bubble from the house -->
   <div class="speech-bubble" id="speechBubble"></div>
 
-  <p class="eyebrow">з любов'ю запрошую вас</p>
-  <h1>Нове <em>гніздечко</em></h1>
-  <p class="subtitle">відкриває свої двері</p>
+  <p class="eyebrow">з любов'ю запрошую тебе</p>
+  <h1>Будь моїм <em>гостем</em></h1>
+  <p class="subtitle">завітай до мене</p>
 
   <div class="divider">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3C9 3 15 6.5 15 11C15 13.8 12.3 16 9 16C5.7 16 3 13.8 3 11C3 6.5 9 3 9 3Z" fill="#F9C9D4" stroke="#F2879E" stroke-width="1"/></svg>
   </div>
 
+  <p class="picker-hint">Обери, коли тобі зручно завітати</p>
   <div class="info-grid">
-    <div class="info-block">
+    <div class="info-block info-pickable">
       <div class="label">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1" y="2" width="11" height="10" rx="2" stroke="#F2879E" stroke-width="1.3"/><path d="M1 5.5h11" stroke="#F2879E" stroke-width="1.1"/><path d="M4 1v2M9 1v2" stroke="#F2879E" stroke-width="1.3" stroke-linecap="round"/></svg>
         Дата
       </div>
-      <div class="value">13 червня</div>
-      <div class="sub">субота</div>
+      <input type="date" id="eventDate" class="info-input" />
+      <div class="sub" id="dateSub">обери день</div>
     </div>
-    <div class="info-block">
+    <div class="info-block info-pickable">
       <div class="label">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#F2879E" stroke-width="1.3"/><path d="M6.5 3.5v3.2l2 1.5" stroke="#F2879E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Час
       </div>
-      <div class="value">17:00</div>
-      <div class="sub">чекаю на вас!</div>
+      <input type="time" id="eventTime" class="info-input" />
+      <div class="sub">чекаю на тебе!</div>
     </div>
   </div>
 
@@ -448,8 +469,8 @@
   </div>
 
   <p class="message">
-    Я переїхала і дуже хочу розділити цю радість з тобою!<br>
-    Приходь — пригощу, обійму і покажу кожен куточок<br>мого нового дому.
+    Я дуже хочу побачитися з тобою!<br>
+    Приходь — пригощу, обійму і проведемо<br>чудовий вечір разом.
   </p>
 
   <!-- RSVP -->
@@ -488,7 +509,7 @@
           <path d="M1 1.5 L9 7.5 L17 1.5" stroke="#F9C9D4" stroke-width="0.8" stroke-linecap="round" opacity="0.5"/>
         </svg>
       </p>
-    <p class="section-sub">Що будеш пити і що хочеш побажати господині?</p>
+    <p class="section-sub">Що хочеш побажати господині?</p>
 
     <div id="guestFormInner">
       <div class="field-wrap">
@@ -496,21 +517,6 @@
         <input type="text" id="guestName" placeholder="Як тебе звати?" maxlength="60"
                autocomplete="name" autocapitalize="words" autocorrect="off"
                enterkeyhint="next" inputmode="text" />
-      </div>
-
-      <div class="field-wrap">
-        <label>Що будеш пити?</label>
-        <div class="drink-chips" id="drinkChips">
-          <span class="drink-chip" onclick="toggleChip(this)">Вино</span>
-          <span class="drink-chip" onclick="toggleChip(this)">Шампанське</span>
-          <span class="drink-chip" onclick="toggleChip(this)">Пиво</span>
-          <span class="drink-chip" onclick="toggleChip(this)">Коктейль</span>
-          <span class="drink-chip" onclick="toggleChip(this)">Сік</span>
-          <span class="drink-chip" onclick="toggleChip(this)">Вода</span>
-          <span class="drink-chip" onclick="toggleChip(this)">Чай / кава</span>
-          <span class="drink-chip" onclick="toggleChip(this)">Камбуча</span>
-          <span class="drink-chip" onclick="toggleChip(this)">Не п'ю</span>
-        </div>
       </div>
 
       <div class="field-wrap">
@@ -527,15 +533,52 @@
         <svg width="22" height="17" viewBox="0 0 22 17" fill="none"><path d="M2 8L8.5 14.5L20 2" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div class="ok-text" id="successName">Дякую!</div>
-      <div class="ok-sub">Твої побажання отримані — до зустрічі 13 червня!</div>
+      <div class="ok-sub" id="successDateSub">Твої побажання отримані — до зустрічі 13 червня!</div>
     </div>
   </div>
 </div>
 
 <script>
+// ---- EVENT DATE/TIME (guest picks when they want to visit) ----
+const dateInput = document.getElementById('eventDate');
+const timeInput = document.getElementById('eventTime');
+
+// Default to tomorrow at 18:00 so the page is alive from the moment it loads
+(function setDefaults() {
+  const now = new Date();
+  const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const yyyy = tomorrow.getFullYear();
+  const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+  const dd = String(tomorrow.getDate()).padStart(2, '0');
+  dateInput.value = `${yyyy}-${mm}-${dd}`;
+  // Disallow picking a day already in the past
+  dateInput.min = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  timeInput.value = '18:00';
+})();
+
+function getEventDate() {
+  const date = dateInput.value || dateInput.min;
+  const time = timeInput.value || '18:00';
+  return new Date(`${date}T${time}:00`);
+}
+function fmtDateUk(d) { return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' }); }
+function fmtWeekdayUk(d) { return d.toLocaleDateString('uk-UA', { weekday: 'long' }); }
+function fmtTimeUk(d) {
+  return d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+function renderEventDateTime() {
+  const d = getEventDate();
+  const ds = document.getElementById('dateSub');
+  if (ds) ds.textContent = `${fmtDateUk(d)}, ${fmtWeekdayUk(d)}`;
+}
+
+dateInput.addEventListener('change', renderEventDateTime);
+timeInput.addEventListener('change', renderEventDateTime);
+renderEventDateTime();
+
 // ---- COUNTDOWN (real-time) ----
 (function() {
-  const party = new Date('2026-06-13T17:00:00');
   const block = document.getElementById('countdownBlock');
   const msgEl = document.getElementById('cdMsg');
 
@@ -543,6 +586,7 @@
   function set(id, val) { document.getElementById(id).textContent = val; }
 
   function tick() {
+    const party = getEventDate();
     const diff = party - new Date();
 
     if (diff <= 0) {
@@ -580,14 +624,18 @@
 })();
 
 // ---- KNOCK THE DOOR ----
-const phrases = [
-  'Хто там? …О, це ти! Заходь 13-го!',
-  'Ще раз стукати? Я вже чую!',
-  'Тук-тук! Двері відчинять 13 червня о 17:00!',
-  'Господиня вдома, але зайнята прибиранням...',
-  'Окей, окей, я зрозуміла — ти точно прийдеш!',
-  'Стукати більше не треба, просто приходь!',
-];
+function getPhrases() {
+  const d = getEventDate();
+  const dayNum = d.getDate();
+  return [
+    `Хто там? …О, це ти! Заходь ${dayNum}-го!`,
+    'Ще раз стукати? Я вже чую!',
+    `Тук-тук! Двері відчинять ${fmtDateUk(d)} о ${fmtTimeUk(d)}!`,
+    'Господиня вдома, чекає на тебе...',
+    'Окей, окей, я зрозуміла — ти точно прийдеш!',
+    'Стукати більше не треба, просто приходь!',
+  ];
+}
 let knockCount = 0;
 let doorOpen = false;
 
@@ -607,6 +655,7 @@ function knockDoor() {
   else svg.classList.remove('door-open');
 
   // show bubble
+  const phrases = getPhrases();
   bubble.textContent = phrases[knockCount % phrases.length];
   bubble.style.display = 'block';
   bubble.style.animation = 'none';
@@ -723,18 +772,8 @@ function spawnConfetti() {
 // ---- GUEST FORM ----
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbwEfNZR64ANcbyeo1PDXfCLnpbE8t3-Or47ydWyHWWFNv-uJJZC3Mc_kjfre68xFns1/exec';
 
-function toggleChip(el) {
-  el.classList.toggle('active');
-}
-
-function getSelectedDrinks() {
-  return [...document.querySelectorAll('.drink-chip.active')]
-    .map(c => c.textContent).join(', ');
-}
-
 async function submitGuest() {
   const name  = document.getElementById('guestName').value.trim();
-  const drinks = getSelectedDrinks();
   const wish  = document.getElementById('guestWish').value.trim();
 
   if (!name) {
@@ -748,7 +787,15 @@ async function submitGuest() {
   btn.disabled = true;
   btn.textContent = 'Надсилаю…';
 
-  const payload = { name, drinks: drinks || 'не вказано', wish: wish || '—', time: new Date().toLocaleString('uk-UA') };
+  const visit = getEventDate();
+  const payload = {
+    name,
+    wish: wish || '—',
+    visitDate: dateInput.value,
+    visitTime: timeInput.value,
+    visitWhen: `${fmtDateUk(visit)} (${fmtWeekdayUk(visit)}) о ${fmtTimeUk(visit)}`,
+    time: new Date().toLocaleString('uk-UA'),
+  };
 
   if (SHEET_URL === 'YOUR_SCRIPT_URL') {
     // Demo mode — just show success without real request
@@ -776,6 +823,8 @@ function showSuccess(name) {
   const s = document.getElementById('formSuccess');
   s.style.display = 'flex';
   document.getElementById('successName').textContent = `Дякую, ${name}!`;
+  document.getElementById('successDateSub').textContent =
+    `Твої побажання отримані — до зустрічі ${fmtDateUk(getEventDate())}!`;
   spawnConfetti();
 }
 
